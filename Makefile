@@ -2,7 +2,7 @@
 
 BINs := yealink-cfgcrack yealink-keycrack yealink-keyderiv
 ENCs := $(patsubst %.cfg,%.enc,$(wildcard test/*.cfg))
-CFLAGS := -O3
+CFLAGS := -O3 -Wall
 
 .PHONY: all clean
 
