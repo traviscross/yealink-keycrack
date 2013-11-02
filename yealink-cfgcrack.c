@@ -145,7 +145,9 @@ int main(int argc, const char **argv) {
   double tps = c/tdiff;
   fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
   if (found) {
-    fprintf(stderr, "Found key \"%s\" generated at %u\n\n", key, tu);
+    struct tm *tu_tm = gmtime((time_t*)&tu);
+    char tu_hm[128]; strftime(tu_hm, sizeof(tu_hm), "%Y-%m-%dT%H:%M:%S +0000", tu_tm);
+    fprintf(stderr, "Found key \"%s\" generated at %u (%s)\n\n", key, tu, tu_hm);
     decrypt(key, cfg_obc, cfg_ib, cfg_s.st_size);
     if (memcmp(cfg_ob, cfg_obc, cfg_s.st_size))
       errout1("Internal error: decryption mismatch");
