@@ -32,22 +32,24 @@ static char* rstr(char *guess, char *map) {
 
 int main(int argc, char **argv) {
   time_t t = time(NULL);
+  unsigned int tu = (unsigned int)t, stop=++tu;
   char guess[17] = "";
-  long int c = 0;
+  long unsigned int c = 0;
   if (argc < 2) {
     fprintf(stderr, "Usage: %s <key>\n", argv[0]);
     return 255;
   }
   char *key = argv[1];
-  while (t>(t-315360000)) {
-    ms_srand((unsigned int)t);
+  while (1) {
+    ms_srand(tu);
     //rstr(guess,ar1); if (!(strcasecmp(guess,key))) break;
     rstr(guess,ar2); if (!(strcasecmp(guess,key))) break;
     //rstr(guess,ar3); if (!(strcasecmp(guess,key))) break;
     //rstr(guess,ar4); if (!(strcasecmp(guess,key))) break;
-    t--; c++;
+    tu--; c++;
     if (!(c%2592000))
       fprintf(stderr,"Checked back %d months\n", c/2592000);
+    if (tu==stop) break;
   }
   if (!(strcasecmp(guess,key))) {
     printf("Found key: %s generated at %d\n", guess, t);
