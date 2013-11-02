@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdint.h>
 
 static char ar1[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static char ar2[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -34,7 +35,7 @@ int main(int argc, char **argv) {
   time_t t = time(NULL);
   unsigned int tu = (unsigned int)t, stop=++tu;
   char guess[17] = "";
-  long unsigned int c = 0;
+  uint32_t c = 0;
   if (argc < 2) {
     fprintf(stderr, "Usage: %s <key>\n", argv[0]);
     return 255;
@@ -47,8 +48,8 @@ int main(int argc, char **argv) {
     //rstr(guess,ar3); if (!(strcasecmp(guess,key))) break;
     //rstr(guess,ar4); if (!(strcasecmp(guess,key))) break;
     tu--; c++;
-    if (!(c%2592000))
-      fprintf(stderr,"Checked back %d months\n", c/2592000);
+    if (!(c & 0x00ffffff))
+      fprintf(stderr,"%d/256 done\n", (c>>24));
     if (tu==stop) break;
   }
   if (!(strcasecmp(guess,key))) {
