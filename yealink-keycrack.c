@@ -18,12 +18,12 @@ inline int ms_rand() {
   return (ms_rseed = (ms_rseed * 214013 + 2531011) & MS_RAND_MAX) >> 16;
 }
 
-char rchar(char *map) {
+static char rchar(char *map) {
   int i = ms_rand() % 62;
   return map[i];
 }
 
-char* rstr(char *guess, char *map) {
+static char* rstr(char *guess, char *map) {
   int i;
   for (i=0; i<16; i++)
     guess[i] = rchar(map);
