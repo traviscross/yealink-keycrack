@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdint.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <openssl/aes.h>
@@ -71,22 +73,38 @@ int main(int argc, char **argv) {
   unsigned int tu = (unsigned int)t, stop=++tu;
   char key[17] = "";
   uint32_t c = 0;
+  struct timeval tv0, tvn, tvl;
+  if (gettimeofday(&tv0, NULL)) {
+    perror("Error"); return 254; }
+  memcpy(&tvl,&tv0,sizeof(struct timeval));
   int found = 0;
   while (1) {
     ms_srand(tu); rkey(key);
     if (test_key(key, cfg_ob, cfg_ib, cfg_s.st_size)) {
       found++; break; }
     tu--; c++;
-    if (!(c & 0x00ffffff))
-      fprintf(stderr,"%d/256 done\n", (c>>24));
+    if (!(c & 0x00ffffff)) {
+      if (gettimeofday(&tvn, NULL)) {
+        perror("Error"); return 254; }
+      double tdiff_total = (tvn.tv_sec-tv0.tv_sec) + (tvn.tv_usec-tv0.tv_usec)/1000000;
+      double tdiff_last = (tvn.tv_sec-tvl.tv_sec) + (tvn.tv_usec-tvl.tv_usec)/1000000;
+      double tps_total = c/tdiff_total, tps_last = 0x00ffffff/tdiff_last;
+      fprintf(stderr,"%d/256 done @ %.0f keys/sec, %.0f keys/sec avg\n",
+              (c>>24), tps_last, tps_total);
+      tvl=tvn;
+    }
     if (tu==stop) break;
   }
+  if (gettimeofday(&tvn, NULL)) { perror("Error"); return 254; }
+  double tdiff = (tvn.tv_sec-tv0.tv_sec) + (tvn.tv_usec-tv0.tv_usec)/1000000;
+  double tps = c/tdiff;
+  fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
   if (found) {
-    fprintf(stderr, "Found key: %s generated at %u\n", key, tu);
+    fprintf(stderr, "Found key \"%s\" generated at %u\n\n", key, tu);
     printf("%s",cfg_ob);
     return 0;
   } else {
-    printf("Couldn't find key, giving up\n");
+    fprintf(stderr, "Couldn't find key; giving up\n");
     return 1;
   }
 }
