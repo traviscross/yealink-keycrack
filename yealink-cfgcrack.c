@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
   cfg_ib[cfg_s.st_size] = 0;
   if (fclose(cfg_f)) errout();
   time_t t = time(NULL);
-  unsigned int tu = (unsigned int)t, stop=++tu;
+  unsigned int tu = (unsigned int)t, stop=tu+1;
   uchar key[17] = "";
   uint32_t c = 0;
   struct timeval tv0, tvn, tvl;
