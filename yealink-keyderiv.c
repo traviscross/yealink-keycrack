@@ -36,4 +36,5 @@ int main(int argc, char **argv) {
   char guess[17] = "";
   rstr(guess,ar);
   printf("%s\n",guess);
+  return 0;
 }
