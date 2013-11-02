@@ -37,17 +37,50 @@ static uchar* rkey(uchar *key) {
   return key;
 }
 
+static uchar utf8_bom[] = "\xef\xbb\xbf";
 static uchar* test_key(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
   uchar *ibp=ibuf, *ibe=ibuf+buf_len;
   uchar *obp=obuf, *obe=obuf;
   AES_KEY akey;
   AES_set_decrypt_key(key, 128, &akey);
+  uint8_t nl=0, nm=4, ui=0, bi=0;
   for (; ibp<ibe; ibp+=16) {
     AES_decrypt(ibp, obp, &akey); obe+=16;
-    uint8_t nl=0;
-    for (; obp<obe; obp++)
-      if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32))
-        if (++nl>4) return 0;
+    for (; bi && (obp<obe); bi--, obp++)
+      if (!(*obp == utf8_bom[3-bi]))
+        if (++nl>nm) return 0;
+        else { bi=0; break; }
+    for (; ui && (obp<obe); ui--, obp++)
+      if (!((*obp & 0xc0) == 0x80))
+        if (++nl>nm) return 0;
+        else { ui=0; break; }
+    for (; obp<obe;) {
+      if (!(*obp >> 7)) {
+        for (; (obp<obe); obp++)
+          if (*obp >> 7) break;
+          else if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32))
+            if (++nl>nm) return 0; else break;
+      } else if (*obp == 0xef) {
+        for (obp++, bi=2; bi && (obp<obe); bi--, obp++)
+          if (!(*obp == utf8_bom[3-bi]))
+            if (++nl>nm) return 0;
+            else { bi=0; break; }
+      } else if ((*obp & 0xe0) == 0xc0
+                 || (*obp & 0xf0) == 0xe0
+                 || (*obp & 0xf8) == 0xf0
+                 || (*obp & 0xfc) == 0xf8
+                 || (*obp & 0xfe) == 0xfc) {
+        int b=*obp;
+        for (; b & 0x80; b<<= 1, ui++);
+        for (ui--, obp++; ui && (obp<obe); ui--, obp++)
+          if (!((*obp & 0xc0) == 0x80))
+            if (++nl>nm) return 0;
+            else { ui=0; break; }
+      } else {
+        if (++nl>nm) return 0;
+        obp++;
+      }
+    }
   }
   obuf[buf_len] = 0;
   return obuf;
