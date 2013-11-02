@@ -12,10 +12,10 @@ static char ar2[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 // See: http://rosettacode.org/wiki/Linear_congruential_generator
 #define MS_RAND_MAX ((1U << 31) - 1)
 static int ms_rseed = 0;
-inline void ms_srand(int x) {
+static inline void ms_srand(int x) {
   ms_rseed = x;
 }
-inline int ms_rand() {
+static inline int ms_rand() {
   return (ms_rseed = (ms_rseed * 214013 + 2531011) & MS_RAND_MAX) >> 16;
 }
 
