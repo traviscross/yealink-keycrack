@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <openssl/aes.h>
 
+typedef unsigned char uchar;
+
 static void errout() { perror("Error"); exit(254); }
 static void errout1(char *msg) { fprintf(stderr, "%s\n", msg); exit(254); }
 
@@ -22,22 +24,22 @@ static inline int ms_rand() {
   return (ms_rseed = (ms_rseed * 214013 + 2531011) & MS_RAND_MAX) >> 16;
 }
 
-static char keymap[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static char rchar() {
+static uchar keymap[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static uchar rchar() {
   int i = ms_rand() % 62;
   return keymap[i];
 }
 
-static char* rkey(char *key) {
+static uchar* rkey(uchar *key) {
   int i;
   for (i=0; i<16; i++)
     key[i] = rchar();
   return key;
 }
 
-static char* test_key(char *key, char *obuf, char *ibuf, size_t buf_len) {
-  char *ibp=ibuf, *ibe=ibuf+buf_len;
-  char *obp=obuf, *obe=obuf;
+static uchar* test_key(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
+  uchar *ibp=ibuf, *ibe=ibuf+buf_len;
+  uchar *obp=obuf, *obe=obuf;
   AES_KEY akey;
   AES_set_decrypt_key(key, 128, &akey);
   for (; ibp<ibe; ibp+=16) {
@@ -59,7 +61,7 @@ int main(int argc, char **argv) {
   char *cfg_p = argv[1];
   struct stat cfg_s;
   if (stat(cfg_p, &cfg_s)) errout();
-  char *cfg_ib, *cfg_ob;
+  uchar *cfg_ib, *cfg_ob;
   if (!(cfg_ib = malloc(cfg_s.st_size+1))) errout();
   if (!(cfg_ob = malloc(cfg_s.st_size+1))) errout();
   FILE *cfg_f;
@@ -69,7 +71,7 @@ int main(int argc, char **argv) {
   if (fclose(cfg_f)) errout();
   time_t t = time(NULL);
   unsigned int tu = (unsigned int)t, stop=++tu;
-  char key[17] = "";
+  uchar key[17] = "";
   uint32_t c = 0;
   struct timeval tv0, tvn, tvl;
   if (gettimeofday(&tv0, NULL)) errout();
