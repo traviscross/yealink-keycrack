@@ -13,8 +13,6 @@
 static void errout() { perror("Error"); exit(254); }
 static void errout1(char *msg) { fprintf(stderr, "%s\n", msg); exit(254); }
 
-static char keymap[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
 #define MS_RAND_MAX ((1U << 31) - 1)
 static int ms_rseed = 0;
 static inline void ms_srand(int x) {
@@ -24,6 +22,7 @@ static inline int ms_rand() {
   return (ms_rseed = (ms_rseed * 214013 + 2531011) & MS_RAND_MAX) >> 16;
 }
 
+static char keymap[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static char rchar() {
   int i = ms_rand() % 62;
   return keymap[i];
