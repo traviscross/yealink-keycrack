@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <time.h>
 
-static char key[] = "ljB7jiDIQQ7XD888";
 static char ar1[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static char ar2[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static char ar3[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -35,6 +34,11 @@ int main(int argc, char **argv) {
   time_t t = time(NULL);
   char guess[17] = "";
   long int c = 0;
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <key>\n", argv[0]);
+    return 255;
+  }
+  char *key = argv[1];
   while (t>(t-315360000)) {
     ms_srand((unsigned int)t);
     //rstr(guess,ar1); if (!(strcasecmp(guess,key))) break;
