@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
   fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
   if (found) {
     fprintf(stderr, "Found key \"%s\" generated at %u\n\n", key, tu);
-    printf("%s",cfg_ob);
+    fwrite(cfg_ob, cfg_s.st_size, 1, stdout);
     return 0;
   } else {
     fprintf(stderr, "Couldn't find key; giving up\n");
