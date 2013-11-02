@@ -1,13 +1,13 @@
 ###### -*- mode: makefile -*-
 
-BIN := yealink-keycrack
+BINs := yealink-keycrack yealink-keyderiv
 
 .PHONY: all clean
 
-all: $(BIN)
+all: $(BINs)
 
 clean:
-	rm -f $(BIN)
+	rm -f $(BINs)
 
-yealink-keycrack: $(BIN).c Makefile
+%: %.c Makefile
 	gcc -O3 -o $@ $<
