@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     if (tu==stop) break;
   }
   if (!(strcasecmp(guess,key))) {
-    printf("Found key: %s generated at %d\n", guess, tu);
+    printf("Found key: %s generated at %u\n", guess, tu);
     return 0;
   } else {
     printf("Couldn't find key, giving up\n");
