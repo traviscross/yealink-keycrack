@@ -37,6 +37,16 @@ static uchar* rkey(uchar *key) {
   return key;
 }
 
+static uchar* decrypt(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
+  uchar *ibp=ibuf, *ibe=ibuf+buf_len, *obp=obuf;
+  AES_KEY akey;
+  AES_set_decrypt_key(key, 128, &akey);
+  for (; ibp<ibe; ibp+=16, obp+=16)
+    AES_decrypt(ibp, obp, &akey);
+  obuf[buf_len] = 0;
+  return obuf;
+}
+
 static uchar utf8_bom[] = "\xef\xbb\xbf";
 static uchar* test_key(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
   uchar *ibp=ibuf, *ibe=ibuf+buf_len;
@@ -94,9 +104,10 @@ int main(int argc, char **argv) {
   char *cfg_p = argv[1];
   struct stat cfg_s;
   if (stat(cfg_p, &cfg_s)) errout();
-  uchar *cfg_ib, *cfg_ob;
+  uchar *cfg_ib, *cfg_ob, *cfg_obc;
   if (!(cfg_ib = malloc(cfg_s.st_size+1))) errout();
   if (!(cfg_ob = malloc(cfg_s.st_size+1))) errout();
+  if (!(cfg_obc = malloc(cfg_s.st_size+1))) errout();
   FILE *cfg_f;
   if (!(cfg_f = fopen(cfg_p, "r"))) errout();
   if (1 != fread(cfg_ib, cfg_s.st_size, 1, cfg_f)) errout1("Read failed");
@@ -132,6 +143,9 @@ int main(int argc, char **argv) {
   fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
   if (found) {
     fprintf(stderr, "Found key \"%s\" generated at %u\n\n", key, tu);
+    decrypt(key, cfg_obc, cfg_ib, cfg_s.st_size);
+    if (memcmp(cfg_ob, cfg_obc, cfg_s.st_size))
+      errout1("Internal error: decryption mismatch");
     fwrite(cfg_ob, cfg_s.st_size, 1, stdout);
     return 0;
   } else {
