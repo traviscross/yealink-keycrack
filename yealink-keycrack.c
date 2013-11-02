@@ -37,10 +37,10 @@ int main(int argc, char **argv) {
   long int c = 0;
   while (t>(t-315360000)) {
     ms_srand((unsigned int)t);
-    rstr(guess,ar1); if (!(strcasecmp(guess,key))) break;
+    //rstr(guess,ar1); if (!(strcasecmp(guess,key))) break;
     rstr(guess,ar2); if (!(strcasecmp(guess,key))) break;
-    rstr(guess,ar3); if (!(strcasecmp(guess,key))) break;
-    rstr(guess,ar4); if (!(strcasecmp(guess,key))) break;
+    //rstr(guess,ar3); if (!(strcasecmp(guess,key))) break;
+    //rstr(guess,ar4); if (!(strcasecmp(guess,key))) break;
     t--; c++;
     if (!(c%2592000))
       fprintf(stderr,"Checked back %d months\n", c/2592000);
