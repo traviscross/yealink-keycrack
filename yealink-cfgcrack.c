@@ -59,37 +59,37 @@ static uchar* test_key(const uchar *key, uchar *obuf, const uchar *ibuf, const s
   static const uint8_t mi = max_invalid_bytes_per_block;
   for (; ibp<ibe; ibp+=16) {
     AES_decrypt(ibp, obp, &akey); obe+=16;
-    for (; bi && (obp<obe); bi--, obp++)
+    for (; bi && (obp<obe); bi--, obp++) // handle remaining BOM bytes
       if (!(*obp == utf8_bom[3-bi])) {
         if (++ni>mi) return 0;
         else { bi=0; break; }}
-    for (; ui && (obp<obe); ui--, obp++)
+    for (; ui && (obp<obe); ui--, obp++) // handle remaining UTF-8 bytes
       if (!((*obp & 0xc0) == 0x80)) {
         if (++ni>mi) return 0;
         else { ui=0; break; }}
     for (; obp<obe;) {
-      if (!(*obp >> 7)) {
+      if (!(*obp >> 7)) { // ASCII character
         for (; (obp<obe); obp++) {
-          if (*obp >> 7) break;
-          else if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32)) {
+          if (*obp >> 7) break; // non-ASCII
+          else if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32)) { // non-printable
             if (++ni>mi) return 0; else break; }}
-      } else if (*obp == 0xef) {
+      } else if (*obp == 0xef) { // byte-order mark
         for (obp++, bi=2; bi && (obp<obe); bi--, obp++)
-          if (!(*obp == utf8_bom[3-bi])) {
+          if (!(*obp == utf8_bom[3-bi])) { // Invalid byte where BOM expected
             if (++ni>mi) return 0;
             else { bi=0; break; }}
-      } else if ((*obp & 0xe0) == 0xc0
+      } else if ((*obp & 0xe0) == 0xc0 // UTF-8 first byte
                  || (*obp & 0xf0) == 0xe0
                  || (*obp & 0xf8) == 0xf0
                  || (*obp & 0xfc) == 0xf8
                  || (*obp & 0xfe) == 0xfc) {
         int b=*obp;
-        for (; b & 0x80; b<<= 1, ui++);
+        for (; b & 0x80; b<<= 1, ui++); // Expect ui UTF-8 bytes
         for (ui--, obp++; ui && (obp<obe); ui--, obp++)
-          if (!((*obp & 0xc0) == 0x80)) {
+          if (!((*obp & 0xc0) == 0x80)) { // Invalid byte where UTF-8 expected
             if (++ni>mi) return 0;
             else { ui=0; break; }}
-      } else {
+      } else { // Invalid byte
         if (++ni>mi) return 0;
         obp++;
       }
