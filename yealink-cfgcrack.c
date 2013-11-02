@@ -10,6 +10,9 @@
 #include <errno.h>
 #include <openssl/aes.h>
 
+static void errout() { perror("Error"); exit(254); }
+static void errout1(char *msg) { fprintf(stderr, "%s\n", msg); exit(254); }
+
 static char keymap[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 #define MS_RAND_MAX ((1U << 31) - 1)
@@ -54,28 +57,21 @@ int main(int argc, char **argv) {
   }
   char *cfg_p = argv[1];
   struct stat cfg_s;
-  if (stat(cfg_p, &cfg_s)) {
-    perror("Error"); return 254; }
+  if (stat(cfg_p, &cfg_s)) errout();
   char *cfg_ib, *cfg_ob;
-  if (!(cfg_ib = malloc(cfg_s.st_size+1))) {
-    perror("Error"); return 254; }
-  if (!(cfg_ob = malloc(cfg_s.st_size+1))) {
-    perror("Error"); return 254; }
+  if (!(cfg_ib = malloc(cfg_s.st_size+1))) errout();
+  if (!(cfg_ob = malloc(cfg_s.st_size+1))) errout();
   FILE *cfg_f;
-  if (!(cfg_f = fopen(cfg_p, "r"))) {
-    perror("Error"); return 254; }
-  if (1 != fread(cfg_ib, cfg_s.st_size, 1, cfg_f)) {
-    fprintf(stderr, "Read failed\n"); return 254; }
+  if (!(cfg_f = fopen(cfg_p, "r"))) errout();
+  if (1 != fread(cfg_ib, cfg_s.st_size, 1, cfg_f)) errout1("Read failed");
   cfg_ib[cfg_s.st_size] = 0;
-  if (fclose(cfg_f)) {
-    perror("Error"); return 254; }
+  if (fclose(cfg_f)) errout();
   time_t t = time(NULL);
   unsigned int tu = (unsigned int)t, stop=++tu;
   char key[17] = "";
   uint32_t c = 0;
   struct timeval tv0, tvn, tvl;
-  if (gettimeofday(&tv0, NULL)) {
-    perror("Error"); return 254; }
+  if (gettimeofday(&tv0, NULL)) errout();
   memcpy(&tvl,&tv0,sizeof(struct timeval));
   int found = 0;
   while (1) {
@@ -84,8 +80,7 @@ int main(int argc, char **argv) {
       found++; break; }
     tu--; c++;
     if (!(c & 0x00ffffff)) {
-      if (gettimeofday(&tvn, NULL)) {
-        perror("Error"); return 254; }
+      if (gettimeofday(&tvn, NULL)) errout();
       double tdiff_total = (tvn.tv_sec-tv0.tv_sec) + (tvn.tv_usec-tv0.tv_usec)/1000000;
       double tdiff_last = (tvn.tv_sec-tvl.tv_sec) + (tvn.tv_usec-tvl.tv_usec)/1000000;
       double tps_total = c/tdiff_total, tps_last = 0x00ffffff/tdiff_last;
@@ -95,7 +90,7 @@ int main(int argc, char **argv) {
     }
     if (tu==stop) break;
   }
-  if (gettimeofday(&tvn, NULL)) { perror("Error"); return 254; }
+  if (gettimeofday(&tvn, NULL)) errout();
   double tdiff = (tvn.tv_sec-tv0.tv_sec) + (tvn.tv_usec-tv0.tv_usec)/1000000;
   double tps = c/tdiff;
   fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
