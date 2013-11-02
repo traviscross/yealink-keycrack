@@ -36,12 +36,12 @@ static char* rkey(char *key) {
 }
 
 static char* test_key(char *key, char *obuf, char *ibuf, size_t buf_len) {
-  char *bp=ibuf, *be=ibuf+buf_len;
+  char *ibp=ibuf, *ibe=ibuf+buf_len;
   char *obp=obuf, *obe=obuf;
   AES_KEY akey;
   AES_set_decrypt_key(key, 128, &akey);
-  for (; bp<be; bp+=16) {
-    AES_decrypt(bp, obp, &akey); obe+=16;
+  for (; ibp<ibe; ibp+=16) {
+    AES_decrypt(ibp, obp, &akey); obe+=16;
     uint8_t nl=0;
     for (; obp<obe; obp++)
       if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32))
