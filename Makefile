@@ -2,6 +2,7 @@
 
 BINs := yealink-cfgcrack yealink-keycrack yealink-keyderiv
 ENCs := $(patsubst %.cfg,%.enc,$(wildcard test/*.cfg))
+CC := gcc
 CFLAGS := -std=gnu99 -O3 -Wall
 
 .PHONY: all clean
@@ -12,10 +13,10 @@ clean:
 	rm -f $(BINs)
 
 yealink-cfgcrack: yealink-cfgcrack.c Makefile
-	gcc $(CFLAGS) -lssl -lcrypto -o $@ $<
+	$(CC) $(CFLAGS) -lssl -lcrypto -o $@ $<
 
 %: %.c Makefile
-	gcc $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 test/test-keydiff.conf: Makefile
 	printf '%s\n' '2000000' > $@
