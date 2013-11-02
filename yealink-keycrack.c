@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdint.h>
+#include <strings.h>
 
 static char ar1[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static char ar2[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
