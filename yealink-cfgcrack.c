@@ -53,7 +53,7 @@ static uchar* test_key(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
   uchar *obp=obuf, *obe=obuf;
   AES_KEY akey;
   AES_set_decrypt_key(key, 128, &akey);
-  uint8_t nl=0, nm=4, ui=0, bi=0;
+  uint8_t nl=0, nm=0, ui=0, bi=0;
   for (; ibp<ibe; ibp+=16) {
     AES_decrypt(ibp, obp, &akey); obe+=16;
     for (; bi && (obp<obe); bi--, obp++)
