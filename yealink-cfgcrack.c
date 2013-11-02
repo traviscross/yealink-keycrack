@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
     tu--; c++;
     if (!(c & 0x00ffffff)) {
       if (gettimeofday(&tvn, NULL)) errout();
-      double tdiff_total = (tvn.tv_sec-tv0.tv_sec) + (tvn.tv_usec-tv0.tv_usec)/1000000;
-      double tdiff_last = (tvn.tv_sec-tvl.tv_sec) + (tvn.tv_usec-tvl.tv_usec)/1000000;
+      double tdiff_total = (tvn.tv_sec-tv0.tv_sec) + (double)(tvn.tv_usec-tv0.tv_usec)/1000000;
+      double tdiff_last = (tvn.tv_sec-tvl.tv_sec) + (double)(tvn.tv_usec-tvl.tv_usec)/1000000;
       double tps_total = c/tdiff_total, tps_last = 0x00ffffff/tdiff_last;
       fprintf(stderr,"%d/256 done @ %.0f keys/sec, %.0f keys/sec avg\n",
               (c>>24), tps_last, tps_total);
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     if (tu==stop) break;
   }
   if (gettimeofday(&tvn, NULL)) errout();
-  double tdiff = (tvn.tv_sec-tv0.tv_sec) + (tvn.tv_usec-tv0.tv_usec)/1000000;
+  double tdiff = (tvn.tv_sec-tv0.tv_sec) + (double)(tvn.tv_usec-tv0.tv_usec)/1000000;
   double tps = c/tdiff;
   fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
   if (found) {
