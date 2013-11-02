@@ -42,8 +42,10 @@ static char* test_key(char *key, char *obuf, char *ibuf, size_t buf_len) {
   AES_set_decrypt_key(key, 128, &akey);
   for (; bp<be; bp+=16) {
     AES_decrypt(bp, obp, &akey); obe+=16;
+    uint8_t nl=0;
     for (; obp<obe; obp++)
-      if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32)) return 0;
+      if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32))
+        if (++nl>4) return 0;
   }
   obuf[buf_len] = 0;
   return obuf;
