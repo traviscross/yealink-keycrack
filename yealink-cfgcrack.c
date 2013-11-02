@@ -47,33 +47,35 @@ static uchar* decrypt(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
   return obuf;
 }
 
+static const uint8_t max_invalid_bytes_per_block = 0;
 static uchar utf8_bom[] = "\xef\xbb\xbf";
 static uchar* test_key(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
   uchar *ibp=ibuf, *ibe=ibuf+buf_len;
   uchar *obp=obuf, *obe=obuf;
   AES_KEY akey;
   AES_set_decrypt_key(key, 128, &akey);
-  uint8_t nl=0, nm=0, ui=0, bi=0;
+  uint8_t ni=0, ui=0, bi=0;
+  static const uint8_t mi = max_invalid_bytes_per_block;
   for (; ibp<ibe; ibp+=16) {
     AES_decrypt(ibp, obp, &akey); obe+=16;
     for (; bi && (obp<obe); bi--, obp++)
       if (!(*obp == utf8_bom[3-bi]))
-        if (++nl>nm) return 0;
+        if (++ni>mi) return 0;
         else { bi=0; break; }
     for (; ui && (obp<obe); ui--, obp++)
       if (!((*obp & 0xc0) == 0x80))
-        if (++nl>nm) return 0;
+        if (++ni>mi) return 0;
         else { ui=0; break; }
     for (; obp<obe;) {
       if (!(*obp >> 7)) {
         for (; (obp<obe); obp++)
           if (*obp >> 7) break;
           else if (*obp > 127 || *obp < 9 || (*obp > 13 && *obp < 32))
-            if (++nl>nm) return 0; else break;
+            if (++ni>mi) return 0; else break;
       } else if (*obp == 0xef) {
         for (obp++, bi=2; bi && (obp<obe); bi--, obp++)
           if (!(*obp == utf8_bom[3-bi]))
-            if (++nl>nm) return 0;
+            if (++ni>mi) return 0;
             else { bi=0; break; }
       } else if ((*obp & 0xe0) == 0xc0
                  || (*obp & 0xf0) == 0xe0
@@ -84,10 +86,10 @@ static uchar* test_key(uchar *key, uchar *obuf, uchar *ibuf, size_t buf_len) {
         for (; b & 0x80; b<<= 1, ui++);
         for (ui--, obp++; ui && (obp<obe); ui--, obp++)
           if (!((*obp & 0xc0) == 0x80))
-            if (++nl>nm) return 0;
+            if (++ni>mi) return 0;
             else { ui=0; break; }
       } else {
-        if (++nl>nm) return 0;
+        if (++ni>mi) return 0;
         obp++;
       }
     }
