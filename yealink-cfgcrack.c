@@ -15,9 +15,9 @@ typedef unsigned char uchar;
 static void errout() { perror("Error"); exit(254); }
 static void errout1(const char *msg) { fprintf(stderr, "%s\n", msg); exit(254); }
 
-#define MS_RAND_MAX ((1U << 31) - 1)
-static int ms_rseed = 0;
-static inline void ms_srand(int x) {
+static unsigned int MS_RAND_MAX = ((1U << 31) - 1);
+static unsigned int ms_rseed = 0;
+static inline void ms_srand(unsigned int x) {
   ms_rseed = x;
 }
 static inline int ms_rand() {
