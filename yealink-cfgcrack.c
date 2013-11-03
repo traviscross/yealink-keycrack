@@ -116,8 +116,8 @@ int main(int argc, const char **argv) {
   if (1 != fread(cfg_ib, cfg_s.st_size, 1, cfg_f)) errout1("Read failed");
   cfg_ib[cfg_s.st_size] = 0;
   if (fclose(cfg_f)) errout();
-  time_t t = time(NULL);
-  unsigned int tu = (unsigned int)t, stop=tu+1;
+  time_t t = time(NULL) & MS_RAND_MAX;
+  unsigned int tu = (unsigned int)t, stop=(tu+1) & MS_RAND_MAX;
   uchar key[17] = "";
   uint32_t c = 0;
   struct timeval tv0, tvn, tvl;
@@ -128,13 +128,13 @@ int main(int argc, const char **argv) {
     ms_srand(tu); rkey(key);
     if (test_key(key, cfg_ob, cfg_ib, cfg_s.st_size)) {
       found++; break; }
-    tu--; c++;
+    tu=(tu-1)&MS_RAND_MAX; c++;
     if (!(c & 0x00ffffff)) {
       if (gettimeofday(&tvn, NULL)) errout();
       double tdiff_total = (tvn.tv_sec-tv0.tv_sec) + (double)(tvn.tv_usec-tv0.tv_usec)/1000000;
       double tdiff_last = (tvn.tv_sec-tvl.tv_sec) + (double)(tvn.tv_usec-tvl.tv_usec)/1000000;
       double tps_total = c/tdiff_total, tps_last = 0x00ffffff/tdiff_last;
-      fprintf(stderr,"%d/256 done @ %.0f keys/sec, %.0f keys/sec avg\n",
+      fprintf(stderr,"%d/128 done @ %.0f keys/sec, %.0f keys/sec avg\n",
               (c>>24), tps_last, tps_total);
       tvl=tvn;
     }
@@ -145,9 +145,13 @@ int main(int argc, const char **argv) {
   double tps = c/tdiff;
   fprintf(stderr, "Searched %d keys in %.3f seconds at %.3f keys/second\n", c, tdiff, tps);
   if (found) {
-    struct tm *tu_tm = gmtime((time_t*)&tu);
-    char tu_hm[128]; strftime(tu_hm, sizeof(tu_hm), "%Y-%m-%dT%H:%M:%S +0000", tu_tm);
-    fprintf(stderr, "Found key \"%s\" generated at %u (%s)\n\n", key, tu, tu_hm);
+    unsigned int tu1 = tu, tu2 = tu+(MS_RAND_MAX+1); struct tm *tm;
+    tm = gmtime((time_t*)&tu1);
+    char tu1_hm[128]; strftime(tu1_hm, sizeof(tu1_hm), "%Y-%m-%dT%H:%M:%S +0000", tm);
+    tm = gmtime((time_t*)&tu2);
+    char tu2_hm[128]; strftime(tu2_hm, sizeof(tu2_hm), "%Y-%m-%dT%H:%M:%S +0000", tm);
+    fprintf(stderr, "Found key \"%s\" generated at %u (%s) or %u (%s)\n\n",
+            key, tu1, tu1_hm, tu2, tu2_hm);
     decrypt(key, cfg_obc, cfg_ib, cfg_s.st_size);
     if (memcmp(cfg_ob, cfg_obc, cfg_s.st_size))
       errout1("Internal error: decryption mismatch");
